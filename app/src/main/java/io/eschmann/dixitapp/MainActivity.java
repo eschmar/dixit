@@ -1,14 +1,11 @@
-package io.eschmar.dixitapp;
+package io.eschmann.dixitapp;
 
 import android.Manifest;
 import android.content.Intent;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.RecognizerIntent;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,6 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,11 +48,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        if (true) {
-//            Intent intent = new Intent(this, LoginActivity.class);
-//            startActivity(intent);
-//            return;
-//        }
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            System.out.println("logged in");
+
+            // already signed in
+        } else {
+            System.out.println("not logged in");
+            // not signed in
+            AuthUI authUi = AuthUI.getInstance();
+            startActivityForResult(
+                    AuthUI.getInstance().createSignInIntentBuilder()
+                            .setProviders(AuthUI.GOOGLE_PROVIDER)
+                            .build(),
+                    55);
+        }
 
         Util.createAppFolder();
         Util.requestPermission(this, reqPermissions);
@@ -107,6 +117,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             archive.add(results.get(0));
             mainListAdapter.notifyDataSetChanged();
+        }
+
+        if (requestCode == 55) {
+            if (resultCode == RESULT_OK) {
+                // user is signed in!
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            } else {
+                System.out.println("User could not be signed in.");
+                // user is not signed in. Maybe just wait for the user to press
+                // "sign in" again, or show a message
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);

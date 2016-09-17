@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.eschmar.dixitapp">
+    package="io.eschmann.dixitapp">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="io.eschmann.dixitapp.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -22,15 +22,9 @@
         </activity>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name="io.eschmann.dixitapp.SettingsActivity"
             android:label="Settings"
             android:theme="@style/AppTheme">
-        </activity>
-
-        <activity
-            android:name=".LoginActivity"
-            android:label="DixitLogin"
-            android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>
 

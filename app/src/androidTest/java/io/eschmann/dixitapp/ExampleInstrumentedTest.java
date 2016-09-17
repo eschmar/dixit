@@ -1,4 +1,4 @@
-package io.eschmar.dixitapp;
+package io.eschmann.dixitapp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

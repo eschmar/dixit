@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_no_margin"
     android:paddingTop="@dimen/activity_no_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="io.eschmar.dixitapp.MainActivity"
+    tools:context="io.eschmann.dixitapp.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
     <LinearLayout

@@ -1,4 +1,4 @@
-package io.eschmar.dixitapp;
+package io.eschmann.dixitapp;
 
 import org.junit.Test;
 
