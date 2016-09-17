@@ -1,6 +1,7 @@
 package io.eschmar.dixitapp;
 
 import android.Manifest;
+import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -40,6 +41,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+//        if (true) {
+//            Intent intent = new Intent(this, LoginActivity.class);
+//            startActivity(intent);
+//            return;
+//        }
 
         Util.createAppFolder();
         Util.requestPermission(this, reqPermissions);
@@ -136,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
