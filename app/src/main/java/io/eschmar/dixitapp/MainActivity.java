@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected String filePath;
     protected boolean isRecording;
     protected MediaRecorder mediaRecorder;
+    protected FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,18 +42,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Util.requestPermission(this, Manifest.permission.RECORD_AUDIO);
         Util.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setImageResource(R.drawable.ic_mic);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (!getIsRecording()) {
                     startRecording();
+                    fab.setImageResource(R.drawable.ic_stop);
                     Snackbar.make(view, "Start recording.", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     return;
                 }
 
                 stopRecording();
+                fab.setImageResource(R.drawable.ic_mic);
                 Snackbar.make(view, "Stop recording.", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }
