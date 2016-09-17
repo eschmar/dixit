@@ -41,17 +41,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            Log.d(LOG_TAG, "No SDCARD found.");
-        } else {
-            File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "Dixit");
-            directory.mkdirs();
-        }
-
-        basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Dixit";
-        filePath = basePath + File.separator + fileName;
-
+        Util.createAppFolder();
         Util.requestPermission(this, reqPermissions);
+
+        basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Util.APP_NAME;
+        filePath = basePath + File.separator + fileName;
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setImageResource(R.drawable.ic_mic);
