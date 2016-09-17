@@ -119,8 +119,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             userName.setText(user.getDisplayName());
             userEmail.setText(user.getEmail());
         }else {
-
-        if (auth.getCurrentUser() == null) {
             AuthUI authUi = AuthUI.getInstance();
             startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
