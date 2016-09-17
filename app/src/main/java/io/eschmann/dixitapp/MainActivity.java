@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected ListView mainListView;
     protected ArrayAdapter mainListAdapter;
     protected DatabaseReference DBreference;
+    protected FirebaseAuth auth;
 
     protected TextView userName;
     protected TextView userEmail;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DatabaseReference DBreference = FirebaseDatabase.getInstance().getReference();
+        DBreference = FirebaseDatabase.getInstance().getReference();
         Util.createAppFolder();
 
         basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Util.APP_NAME;
@@ -112,12 +113,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Util.requestPermission(this, reqPermissions);
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
             FirebaseUser user = auth.getCurrentUser();
             userName.setText(user.getDisplayName());
             userEmail.setText(user.getEmail());
         }else {
+
+        if (auth.getCurrentUser() == null) {
             AuthUI authUi = AuthUI.getInstance();
             startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
@@ -146,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-            Phrase phr = new Phrase(results.get(0), "1234");
+            Phrase phr = new Phrase(results.get(0), auth.getCurrentUser().getUid());
             DBreference.push().setValue(phr);
 
             archive.add(results.get(0));
