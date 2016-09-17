@@ -1,8 +1,12 @@
 package io.eschmar.dixitapp;
 
+import android.Manifest;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +16,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.media.MediaRecorder;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String LOG_TAG = "DixitAppRecording";
+    protected String basePath;
+    protected String fileName = "pew-recording.3gp";
+    protected String filePath;
+    protected boolean isRecording;
+    protected MediaRecorder mediaRecorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,11 +35,25 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        basePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        filePath = basePath + "/" + fileName;
+
+        Util.requestPermission(this, Manifest.permission.RECORD_AUDIO);
+        Util.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                if (!getIsRecording()) {
+                    startRecording();
+                    Snackbar.make(view, "Start recording.", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    return;
+                }
+
+                stopRecording();
+                Snackbar.make(view, "Stop recording.", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }
         });
@@ -40,6 +66,38 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    public boolean getIsRecording() {
+        return this.isRecording;
+    }
+
+    public void setIsRecording(boolean val) {
+        this.isRecording = val;
+    }
+
+    protected void startRecording() {
+        setIsRecording(true);
+
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFile(filePath);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+    }
+
+    protected void stopRecording() {
+        setIsRecording(false);
+        mediaRecorder.stop();
+        mediaRecorder.release();
+        mediaRecorder = null;
     }
 
     @Override
