@@ -23,6 +23,10 @@ public class Util {
             }
         }
 
+        if (newPermissions.toArray().length < 1) {
+            return;
+        }
+
         ActivityCompat.requestPermissions(activity, newPermissions.toArray(new String[0]), 0);
     }
 }
