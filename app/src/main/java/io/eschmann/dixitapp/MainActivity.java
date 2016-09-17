@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.RecognizerIntent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -19,7 +20,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,13 +33,15 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_TAG = "DixitAppRecording";
     private static final int SPEECH_REQUEST_CODE = 0;
+    private static final int RC_SIGN_IN = 55;
     protected String basePath;
     protected String fileName = "pew-recording.raw";
     protected String filePath;
     protected FloatingActionButton fab;
     protected String[] reqPermissions = {
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET
     };
 
     protected List<String> archive = new ArrayList<String>();
@@ -44,28 +51,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
-            System.out.println("logged in");
-
-            // already signed in
-        } else {
-            System.out.println("not logged in");
-            // not signed in
-            AuthUI authUi = AuthUI.getInstance();
-            startActivityForResult(
-                    AuthUI.getInstance().createSignInIntentBuilder()
-                            .setProviders(AuthUI.GOOGLE_PROVIDER)
-                            .build(),
-                    55);
-        }
-
         Util.createAppFolder();
-        Util.requestPermission(this, reqPermissions);
 
         basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Util.APP_NAME;
         filePath = basePath + File.separator + fileName;
@@ -100,6 +91,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mainListView.setAdapter(mainListAdapter);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Util.requestPermission(this, reqPermissions);
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
+            AuthUI authUi = AuthUI.getInstance();
+            startActivityForResult(
+                AuthUI.getInstance().createSignInIntentBuilder()
+                    .setProviders(AuthUI.EMAIL_PROVIDER, AuthUI.GOOGLE_PROVIDER)
+                    .setIsSmartLockEnabled(false)
+                    .build(),
+                RC_SIGN_IN);
+        }
+    }
+
     // Create an intent that can start the Speech Recognizer activity
     private void displaySpeechRecognizer() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -117,15 +126,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             archive.add(results.get(0));
             mainListAdapter.notifyDataSetChanged();
-        }
-
-        if (requestCode == 55) {
+        }else if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 // user is signed in!
                 startActivity(new Intent(this, MainActivity.class));
-                finish();
+                this.finish();
             } else {
-                System.out.println("User could not be signed in.");
                 // user is not signed in. Maybe just wait for the user to press
                 // "sign in" again, or show a message
             }
@@ -158,11 +164,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
+        }else if (id == R.id.action_logout) {
+            AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // user is now signed out
+                        startActivity(new Intent(MainActivity.this, MainActivity.class));
+                        finish();
+                    }
+                });
         }
 
         return super.onOptionsItemSelected(item);
