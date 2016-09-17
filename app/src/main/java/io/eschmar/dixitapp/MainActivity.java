@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.media.MediaRecorder;
 
+import java.io.File;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,8 +41,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        basePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        filePath = basePath + "/" + fileName;
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            Log.d(LOG_TAG, "No SDCARD found.");
+        } else {
+            File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "Dixit");
+            directory.mkdirs();
+        }
+
+        basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Dixit";
+        filePath = basePath + File.separator + fileName;
 
         Util.requestPermission(this, reqPermissions);
 
