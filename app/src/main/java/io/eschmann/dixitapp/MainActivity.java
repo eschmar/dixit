@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.auth.api.Auth;
@@ -47,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected List<String> archive = new ArrayList<String>();
     protected ListView mainListView;
     protected ArrayAdapter mainListAdapter;
+
+    protected TextView userName;
+    protected TextView userEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +87,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ListView mainListView = (ListView) findViewById(R.id.list);
 
         mainListAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                archive
+            this,
+            android.R.layout.simple_list_item_1,
+            archive
         );
 
         mainListView.setAdapter(mainListAdapter);
@@ -95,10 +99,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
 
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View header=navigationView.getHeaderView(0);
+        TextView userName = (TextView)header.findViewById(R.id.userNameView);
+        TextView userEmail = (TextView)header.findViewById(R.id.userEmailView);
+
         Util.requestPermission(this, reqPermissions);
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() == null) {
+        if (auth.getCurrentUser() != null) {
+            FirebaseUser user = auth.getCurrentUser();
+            userName.setText(user.getDisplayName());
+            userEmail.setText(user.getEmail());
+        }else {
             AuthUI authUi = AuthUI.getInstance();
             startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
@@ -130,6 +144,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (resultCode == RESULT_OK) {
                 // user is signed in!
                 startActivity(new Intent(this, MainActivity.class));
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (userName != null && userEmail != null) {
+                    userName.setText(user.getDisplayName());
+                    userEmail.setText(user.getEmail());
+                }
                 this.finish();
             } else {
                 // user is not signed in. Maybe just wait for the user to press
