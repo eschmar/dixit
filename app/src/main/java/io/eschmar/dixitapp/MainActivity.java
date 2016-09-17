@@ -23,7 +23,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_TAG = "DixitAppRecording";
     protected String basePath;
-    protected String fileName = "pew-recording.3gp";
+    protected String fileName = "pew-recording.raw";
     protected String filePath;
     protected boolean isRecording;
     protected MediaRecorder mediaRecorder;
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
         mediaRecorder.setOutputFile(filePath);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
