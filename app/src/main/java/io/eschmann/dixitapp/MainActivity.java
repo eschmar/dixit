@@ -226,8 +226,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_verbs) {
 
-        } else if (id == R.id.nav_archive) {
+        } else if (id == R.id.nav_verbs_pending) {
 
+        } else if (id == R.id.nav_archive) {
+            startActivity(new Intent(MainActivity.this, MainActivity.class));
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

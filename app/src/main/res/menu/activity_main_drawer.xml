@@ -11,22 +11,12 @@
             android:icon="@drawable/ic_device_hub"
             android:title="Verbs" />
         <item
+            android:id="@+id/nav_verbs_pending"
+            android:icon="@drawable/ic_translate"
+            android:title="Pending Verbs" />
+        <item
             android:id="@+id/nav_archive"
             android:icon="@drawable/ic_chat"
             android:title="Archive" />
     </group>
-
-    <!--<item android:title="Communicate">-->
-        <!--<menu>-->
-            <!--<item-->
-                <!--android:id="@+id/nav_share"-->
-                <!--android:icon="@drawable/ic_menu_share"-->
-                <!--android:title="Share" />-->
-            <!--<item-->
-                <!--android:id="@+id/nav_send"-->
-                <!--android:icon="@drawable/ic_menu_send"-->
-                <!--android:title="Send" />-->
-        <!--</menu>-->
-    <!--</item>-->
-
 </menu>
