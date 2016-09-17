@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.speech.RecognizerIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -17,18 +18,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.media.MediaRecorder;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_TAG = "DixitAppRecording";
+    private static final int SPEECH_REQUEST_CODE = 0;
     protected String basePath;
     protected String fileName = "pew-recording.raw";
     protected String filePath;
-    protected boolean isRecording;
-    protected MediaRecorder mediaRecorder;
     protected FloatingActionButton fab;
     protected String[] reqPermissions = {
             Manifest.permission.RECORD_AUDIO,
@@ -60,18 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!getIsRecording()) {
-                    startRecording();
-                    fab.setImageResource(R.drawable.ic_stop);
-                    Snackbar.make(view, "Start recording.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                    return;
-                }
-
-                stopRecording();
-                fab.setImageResource(R.drawable.ic_mic);
-                Snackbar.make(view, "Stop recording.", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                displaySpeechRecognizer();
             }
         });
 
@@ -85,36 +73,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    public boolean getIsRecording() {
-        return this.isRecording;
+    // Create an intent that can start the Speech Recognizer activity
+    private void displaySpeechRecognizer() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        // Start the activity, the intent will be populated with the speech text
+        startActivityForResult(intent, SPEECH_REQUEST_CODE);
     }
 
-    public void setIsRecording(boolean val) {
-        this.isRecording = val;
-    }
-
-    protected void startRecording() {
-        setIsRecording(true);
-
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
-        mediaRecorder.setOutputFile(filePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+    // Invoked when speechRecognizer return a result.
+    // Return a List of strings
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
+            List<String> results = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS);
+            String spokenText = results.get(0);
+           System.out.println(spokenText);
         }
-    }
-
-    protected void stopRecording() {
-        setIsRecording(false);
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
