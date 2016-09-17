@@ -29,9 +29,9 @@
         android:key="pref_general_misc_settings">
 
         <SwitchPreference
-            android:defaultValue="true"
-            android:key="example_switch"
-            android:summary="Example setting."
-            android:title="Vibrate" />
+            android:defaultValue="false"
+            android:key="suggestions"
+            android:summary="Enable phrase suggestions based on other user's usage."
+            android:title="Suggestions" />
     </PreferenceCategory>
 </PreferenceScreen>
