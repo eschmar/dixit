@@ -28,6 +28,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected boolean isRecording;
     protected MediaRecorder mediaRecorder;
     protected FloatingActionButton fab;
+    protected String[] reqPermissions = {
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         basePath = Environment.getExternalStorageDirectory().getAbsolutePath();
         filePath = basePath + "/" + fileName;
 
-        Util.requestPermission(this, Manifest.permission.RECORD_AUDIO);
-        Util.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Util.requestPermission(this, reqPermissions);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setImageResource(R.drawable.ic_mic);
