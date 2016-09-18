@@ -211,56 +211,57 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivityForResult(intent, SPEECH_REQUEST_CODE);
     }
 
+    protected String tempp;
 
     // Invoked when speechRecognizer return a result.
     // Return a List of strings
     @Override
-
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            String result = results.get(0);
 
             if (currentUserNode == null) {
                 Node temp = new Node();
-                temp.addPhrase(new Phrase(results.get(0)));
+                temp.addPhrase(new Phrase(result));
                 mDatabase.child("users").child(mUser.getUid()).setValue(temp);
                 initUserReference();
             }else {
                 System.out.println("PEW: " + currentUserNode.getPhrases());
-                currentUserNode.addPhrase(new Phrase(results.get(0)));
+                currentUserNode.addPhrase(new Phrase(result));
                 mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
             }
 
             if (currentUserNode != null) {
                 mainListAdapter.clear();
                 mainListAdapter.addAll(currentUserNode.getPhrases());
-                mainListAdapter.notifyDataSetChanged();
             }else {
-                archive.add(new Phrase(results.get(0)));
-                mainListAdapter.notifyDataSetChanged();
+                archive.add(new Phrase(result));
             }
 
+            mainListAdapter.notifyDataSetChanged();
+            tempp = result;
 
-            String originalPhrase = results.get(0);
-            String translatedPhrase;
+            String translateUrl = "https://www.googleapis.com/language/translate/v2?key=AIzaSyDdhuqdk-d3KCIH-S09iK7LGGjQQpN1klY&q=" + result + "&source=sv&target=en";
+            JsonObjectRequest translatePhrase = new JsonObjectRequest(
+                    Request.Method.GET, translateUrl, null, new Response.Listener<JSONObject>() {
 
-            String translateUrl = "https://www.googleapis.com/language/translate/v2?key=AIzaSyDdhuqdk-d3KCIH-S09iK7LGGjQQpN1klY&q=" + originalPhrase + "&source=sv&target=en";
-            JsonObjectRequest translatePhrase = new JsonObjectRequest
-                (Request.Method.GET, translateUrl, null, new Response.Listener<JSONObject>() {
                     @Override
-                    public JSONObject onResponse(JSONObject response) {
+                    public void onResponse(JSONObject response) {
                         // the response is already constructed as a JSONObject!
                         // A lot of transformations are needed to extract the right translation!
+                        String translatedPhrase = "";
+
                         try {
                             response = response.getJSONObject("data");
                             JSONArray translations = response.getJSONArray("translations");
                             JSONObject translationObj= translations.getJSONObject(0);
-                            String translation = translationObj.getString("translatedText");
+                            translatedPhrase = translationObj.getString("translatedText");
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
 
-                        return response; //TODO: figure out how to get this value
+                        provideTranslation(tempp, translatedPhrase);
                     }
 
                 }, new Response.ErrorListener() {
@@ -274,82 +275,82 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Volley.newRequestQueue(this).add(translatePhrase);
 
 
-            JSONObject myDocument = new JSONObject();
-            try {
-                myDocument.put("content", "I speak swedish"); //TODO: plug in previous value in here
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myDocument.put("language", "en");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myDocument.put("type", "PLAIN_TEXT");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            JSONObject myFeatures = new JSONObject();
-            try {
-                myFeatures.put("extractDocumentSentiment", new Boolean(false));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myFeatures.put("extractEntities", new Boolean(false));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myFeatures.put("extractSyntax", new Boolean(true));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            JSONObject myBody = new JSONObject();
-            try {
-                myBody.put("document", myDocument);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myBody.put("features", myFeatures);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            try {
-                myBody.put("encodingType", "UTF16");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-
-            String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=AIzaSyB4pa0J8WSkLwbGJE3xcXCmmY0NmxPYRlg";
-
-            JsonObjectRequest getSyntax = new JsonObjectRequest
-                    (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
-                        @Override
-                        public JSONObject onResponse(JSONObject response) {
-                            // the response is already constructed as a JSONObject!
-                            // A lot of transformations are needed to extract the right translation!
-                            try {
-                                JSONArray tokens = response.getJSONArray("tokens");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            System.out.println(response);
-                            return response; //TODO: parse this stuff to get verbs
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                        }
-                    });
-            Volley.newRequestQueue(this).add(getSyntax);
+//            JSONObject myDocument = new JSONObject();
+//            try {
+//                myDocument.put("content", "I speak swedish"); //TODO: plug in previous value in here
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myDocument.put("language", "en");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myDocument.put("type", "PLAIN_TEXT");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            JSONObject myFeatures = new JSONObject();
+//            try {
+//                myFeatures.put("extractDocumentSentiment", new Boolean(false));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myFeatures.put("extractEntities", new Boolean(false));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myFeatures.put("extractSyntax", new Boolean(true));
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//            JSONObject myBody = new JSONObject();
+//            try {
+//                myBody.put("document", myDocument);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myBody.put("features", myFeatures);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                myBody.put("encodingType", "UTF16");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//
+//            String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=AIzaSyB4pa0J8WSkLwbGJE3xcXCmmY0NmxPYRlg";
+//
+//            JsonObjectRequest getSyntax = new JsonObjectRequest
+//                    (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
+//                        @Override
+//                        public void onResponse(JSONObject response) {
+//                            // the response is already constructed as a JSONObject!
+//                            // A lot of transformations are needed to extract the right translation!
+//                            try {
+//                                JSONArray tokens = response.getJSONArray("tokens");
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+//                            System.out.println(response);
+////                            return response; //TODO: parse this stuff to get verbs
+//                        }
+//                    }, new Response.ErrorListener() {
+//
+//                        @Override
+//                        public void onErrorResponse(VolleyError error) {
+//                            error.printStackTrace();
+//                        }
+//                    });
+//            Volley.newRequestQueue(this).add(getSyntax);
 
 
 
@@ -372,6 +373,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    protected void provideTranslation(String origin, String translated) {
+        int pos = 0;
+        ArrayList<Phrase> phrases = currentUserNode.getPhrases();
+        for (int i = 0; i < currentUserNode.getPhrases().toArray().length; i++) {
+            Phrase temp = phrases.get(i);
+            if (temp.getText() == origin) {
+                pos = i;
+                break;
+            }
+        }
+
+        if (pos < 1) { return; }
+        currentUserNode.getPhrases().get(pos).setTranslation(translated);
     }
 
     @Override
