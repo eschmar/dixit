@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -343,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
+                    ArrayList<String> tempVerbs = new ArrayList<String>();
                     try {
                         JSONArray tokens = response.getJSONArray("tokens");
                         for (int i = 0; i < tokens.length(); i++) {
@@ -351,11 +353,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             if (pos.getString("tag").equals("VERB")) {
                                 JSONObject verb = word.getJSONObject("text");
                                 verbs.add(verb.getString("content"));
+                                tempVerbs.add(verb.getString("content"));
                             }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+
+                    Snackbar.make(findViewById(android.R.id.content), "Verbs found: " + tempVerbs.toString(), Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
 
 //                    System.out.println(tokens);
                     //Pattern regex = Pattern.compile("/\\{\\\"content\\\":\\\"|(.*?)\\\",\\\"beginOffset\\\":|([0-9]+)\\},\\\"partOfSpeech\\\"\\:\\{\\\"tag\\\"\\:\\\"VERB\\\"\\}/g");
