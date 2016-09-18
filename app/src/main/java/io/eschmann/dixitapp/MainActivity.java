@@ -22,6 +22,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -34,6 +40,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -198,8 +208,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Create an intent that can start the Speech Recognizer activity
     private void displaySpeechRecognizer() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "sv");
         // Start the activity, the intent will be populated with the speech text
         startActivityForResult(intent, SPEECH_REQUEST_CODE);
     }
@@ -233,6 +242,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mainListAdapter.notifyDataSetChanged();
             }
 
+
+            String text = results.get(0);
+
+            String url = "https://www.googleapis.com/language/translate/v2?key=AIzaSyDdhuqdk-d3KCIH-S09iK7LGGjQQpN1klY&q=" + text + "&source=sv&target=en";
+
+            JsonObjectRequest jsonRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public JSONObject onResponse(JSONObject response) {
+                        // the response is already constructed as a JSONObject!
+                        // A lot of transformations are needed to extract the right translation!
+                        try {
+                            response = response.getJSONObject("data");
+                            JSONArray translations = response.getJSONArray("translations");
+                            JSONObject translationObj= translations.getJSONObject(0);
+                            String translation = translationObj.getString("translatedText");
+                            System.out.println(translation);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        return response;
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                });
+
+            Volley.newRequestQueue(this).add(jsonRequest);
 
         }else if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
