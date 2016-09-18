@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -103,7 +105,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             this,
             android.R.layout.simple_list_item_1,
             archive
-        );
+        ) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View row;
+                LayoutInflater mInflater = LayoutInflater.from(this.getContext());
+
+                if (null == convertView) {
+                    row = mInflater.inflate(android.R.layout.two_line_list_item, null);
+                } else {
+                    row = convertView;
+                }
+
+                TextView text1 = (TextView) row.findViewById(android.R.id.text1);
+                TextView text2 = (TextView) row.findViewById(android.R.id.text2);
+                text1.setText(getItem(position).getText());
+                text2.setText(getItem(position).getTranslation());
+
+                return row;
+            }
+        };
 
         mainListView.setAdapter(mainListAdapter);
 
