@@ -388,6 +388,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (pos < 1) { return; }
         currentUserNode.getPhrases().get(pos).setTranslation(translated);
+        mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
     }
 
     @Override
