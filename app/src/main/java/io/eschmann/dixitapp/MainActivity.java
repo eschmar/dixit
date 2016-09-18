@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 LayoutInflater mInflater = LayoutInflater.from(this.getContext());
 
                 if (null == convertView) {
-                    row = mInflater.inflate(android.R.layout.two_line_list_item, null);
+                    row = mInflater.inflate(R.layout.two_line_list_item, null);
                 } else {
                     row = convertView;
                 }
