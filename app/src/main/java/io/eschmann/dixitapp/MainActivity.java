@@ -343,10 +343,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    String tokens = "";
                     try {
-                        JSONArray tokensObject = response.getJSONArray("tokens");
-                        tokens = tokensObject.toString();
+                        JSONArray tokens = response.getJSONArray("tokens");
+                        for (int i = 0; i < tokens.length(); i++) {
+                            JSONObject word = tokens.getJSONObject(i);
+                            JSONObject pos = word.getJSONObject("partOfSpeech");
+                            if (pos.getString("tag").equals("VERB")) {
+                                JSONObject verb = word.getJSONObject("text");
+                                verbs.add(verb.getString("content"));
+                            }
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
