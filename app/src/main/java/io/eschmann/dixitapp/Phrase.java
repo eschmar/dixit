@@ -7,24 +7,44 @@ package io.eschmann.dixitapp;
  */
 
 public class Phrase {
-    String text;
-    String userId;
+    private String text;
+    private String translation;
+    private Integer type;
 
     public Phrase() {
     }
 
-    public Phrase(String text, String userId) {
+    public Phrase(String text) {
         this.text = text;
-        this.userId = userId;
+        this.type = 0;
+    }
+
+    @Override
+    public String toString() {
+        return getText();
     }
 
     public String getText() {
         return text;
     }
 
-    public String getUserId() {
-        return userId;
+    public void setText(String text) {
+        this.text = text;
     }
 
+    public String getTranslation() {
+        return translation;
+    }
 
+    public void setTranslation(String translation) {
+        this.translation = translation;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
 }

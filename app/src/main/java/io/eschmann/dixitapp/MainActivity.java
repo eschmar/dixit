@@ -26,8 +26,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 import java.io.File;
@@ -53,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected ArrayAdapter mainListAdapter;
     protected DatabaseReference DBreference;
     protected FirebaseAuth auth;
+    private DatabaseReference mDatabase;
+    private FirebaseUser mUser;
+    protected Node currentUserNode;
+    protected DatabaseReference userRef;
 
     protected TextView userName;
     protected TextView userEmail;
@@ -99,6 +106,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         );
 
         mainListView.setAdapter(mainListAdapter);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+    }
+
+    protected void initUserReference() {
+        DatabaseReference userRef = mDatabase.child("users").child(mUser.getUid()).getRef();
+        userRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                currentUserNode = dataSnapshot.getValue(Node.class);
+                System.out.println("Update: " + currentUserNode.getPhrases().toString());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+            }
+        });
     }
 
     @Override
@@ -115,9 +140,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
-            FirebaseUser user = auth.getCurrentUser();
-            userName.setText(user.getDisplayName());
-            userEmail.setText(user.getEmail());
+            mUser = auth.getCurrentUser();
+            userName.setText(mUser.getDisplayName());
+            userEmail.setText(mUser.getEmail());
+
         }else {
             AuthUI authUi = AuthUI.getInstance();
             startActivityForResult(
@@ -147,8 +173,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-            Phrase phr = new Phrase(results.get(0), auth.getCurrentUser().getUid());
-            DBreference.push().setValue(phr);
+            if (currentUserNode == null) {
+                Node temp = new Node();
+                temp.addPhrase(new Phrase(results.get(0)));
+                mDatabase.child("users").child(mUser.getUid()).setValue(temp);
+                initUserReference();
+            }else {
+                currentUserNode.addPhrase(new Phrase(results.get(0)));
+                mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
+            }
 
             archive.add(results.get(0));
             mainListAdapter.notifyDataSetChanged();
@@ -162,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     userEmail.setText(user.getEmail());
                 }
                 this.finish();
+                initUserReference();
             } else {
                 // user is not signed in. Maybe just wait for the user to press
                 // "sign in" again, or show a message
