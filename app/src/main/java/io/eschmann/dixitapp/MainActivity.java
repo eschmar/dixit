@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Manifest.permission.INTERNET
     };
 
-    protected List<String> archive = new ArrayList<String>();
+    protected ArrayList<Phrase> archive = new ArrayList<Phrase>();
     protected ListView mainListView;
     protected ArrayAdapter mainListAdapter;
     protected DatabaseReference DBreference;
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ListView mainListView = (ListView) findViewById(R.id.list);
 
-        mainListAdapter = new ArrayAdapter<String>(
+        mainListAdapter = new ArrayAdapter<Phrase>(
             this,
             android.R.layout.simple_list_item_1,
             archive
@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     currentUserNode = dataSnapshot.getValue(Node.class);
+                    mainListAdapter.clear();
+                    mainListAdapter.addAll(currentUserNode.getPhrases());
+                    mainListAdapter.notifyDataSetChanged();
                 }
 
                 @Override
@@ -191,12 +194,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mDatabase.child("users").child(mUser.getUid()).setValue(temp);
                 initUserReference();
             }else {
+                System.out.println("PEW: " + currentUserNode.getPhrases());
                 currentUserNode.addPhrase(new Phrase(results.get(0)));
                 mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
             }
 
-            archive.add(results.get(0));
-            mainListAdapter.notifyDataSetChanged();
+            if (currentUserNode != null) {
+                mainListAdapter.clear();
+                mainListAdapter.addAll(currentUserNode.getPhrases());
+                mainListAdapter.notifyDataSetChanged();
+            }else {
+                archive.add(new Phrase(results.get(0)));
+                mainListAdapter.notifyDataSetChanged();
+            }
+
+
         }else if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 // user is signed in!
