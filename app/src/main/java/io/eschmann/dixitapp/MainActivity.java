@@ -148,6 +148,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     currentUserNode = dataSnapshot.getValue(Node.class);
+                    if (currentUserNode == null) {
+                        return;
+                    }
+
                     mainListAdapter.clear();
                     mainListAdapter.addAll(currentUserNode.getPhrases());
                     mainListAdapter.notifyDataSetChanged();
