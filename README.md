@@ -6,3 +6,5 @@ _Discover a new language with Speech to Text recognition_
 * Google Translate API
 * Google Natural Language API
 * Google Firebase
+
+Built at [Hackzurich 2016](http://hackzurich.com).
