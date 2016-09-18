@@ -144,6 +144,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             userName.setText(mUser.getDisplayName());
             userEmail.setText(mUser.getEmail());
 
+            mDatabase.child("users").child(mUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    currentUserNode = dataSnapshot.getValue(Node.class);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // ...
+                }
+            });
+
         }else {
             AuthUI authUi = AuthUI.getInstance();
             startActivityForResult(
