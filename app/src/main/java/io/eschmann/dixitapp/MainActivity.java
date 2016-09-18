@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int SPEECH_REQUEST_CODE = 0;
     private static final int RC_SIGN_IN = 55;
     protected String basePath;
-    protected String fileName = "pew-recording.raw";
     protected String filePath;
     protected FloatingActionButton fab;
     protected String[] reqPermissions = {
@@ -84,9 +83,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         DBreference = FirebaseDatabase.getInstance().getReference();
         Util.createAppFolder();
-
-        basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + Util.APP_NAME;
-        filePath = basePath + File.separator + fileName;
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setImageResource(R.drawable.ic_mic);
@@ -145,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 currentUserNode = dataSnapshot.getValue(Node.class);
-                System.out.println("Update: " + currentUserNode.getPhrases().toString());
             }
 
             @Override
@@ -227,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mDatabase.child("users").child(mUser.getUid()).setValue(temp);
                 initUserReference();
             }else {
-                System.out.println("PEW: " + currentUserNode.getPhrases());
                 currentUserNode.addPhrase(new Phrase(result));
                 mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
             }
@@ -359,10 +353,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (resultCode == RESULT_OK) {
                 // user is signed in!
                 startActivity(new Intent(this, MainActivity.class));
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                mUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (userName != null && userEmail != null) {
-                    userName.setText(user.getDisplayName());
-                    userEmail.setText(user.getEmail());
+                    userName.setText(mUser.getDisplayName());
+                    userEmail.setText(mUser.getEmail());
                 }
                 this.finish();
                 initUserReference();
@@ -389,6 +383,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (pos < 1) { return; }
         currentUserNode.getPhrases().get(pos).setTranslation(translated);
         mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
+
     }
 
     @Override
