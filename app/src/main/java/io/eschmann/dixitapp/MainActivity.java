@@ -46,6 +46,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String LOG_TAG = "DixitAppRecording";
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     };
 
     protected ArrayList<Phrase> archive = new ArrayList<Phrase>();
+    protected ArrayList<String> verbs = new ArrayList<String>();
     protected ListView mainListView;
     protected ArrayAdapter mainListAdapter;
     protected DatabaseReference DBreference;
@@ -267,88 +270,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
 
             Volley.newRequestQueue(this).add(translatePhrase);
-
-
-//            JSONObject myDocument = new JSONObject();
-//            try {
-//                myDocument.put("content", "I speak swedish"); //TODO: plug in previous value in here
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myDocument.put("language", "en");
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myDocument.put("type", "PLAIN_TEXT");
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//            JSONObject myFeatures = new JSONObject();
-//            try {
-//                myFeatures.put("extractDocumentSentiment", new Boolean(false));
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myFeatures.put("extractEntities", new Boolean(false));
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myFeatures.put("extractSyntax", new Boolean(true));
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//            JSONObject myBody = new JSONObject();
-//            try {
-//                myBody.put("document", myDocument);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myBody.put("features", myFeatures);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                myBody.put("encodingType", "UTF16");
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//
-//            String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=AIzaSyB4pa0J8WSkLwbGJE3xcXCmmY0NmxPYRlg";
-//
-//            JsonObjectRequest getSyntax = new JsonObjectRequest
-//                    (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
-//                        @Override
-//                        public void onResponse(JSONObject response) {
-//                            // the response is already constructed as a JSONObject!
-//                            // A lot of transformations are needed to extract the right translation!
-//                            try {
-//                                JSONArray tokens = response.getJSONArray("tokens");
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-//                            System.out.println(response);
-////                            return response; //TODO: parse this stuff to get verbs
-//                        }
-//                    }, new Response.ErrorListener() {
-//
-//                        @Override
-//                        public void onErrorResponse(VolleyError error) {
-//                            error.printStackTrace();
-//                        }
-//                    });
-//            Volley.newRequestQueue(this).add(getSyntax);
-
-
-
-
         }else if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 // user is signed in!
@@ -383,7 +304,66 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (pos < 1) { return; }
         currentUserNode.getPhrases().get(pos).setTranslation(translated);
         mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
+        this.parseVerbs(pos);
+    }
 
+    protected void parseVerbs(int pos) {
+        Phrase p = archive.get(pos);
+
+        JSONObject myDocument = new JSONObject();
+        try {
+            myDocument.put("content", p.getTranslation());
+            myDocument.put("language", "en");
+            myDocument.put("type", "PLAIN_TEXT");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject myFeatures = new JSONObject();
+        try {
+            myFeatures.put("extractDocumentSentiment", new Boolean(false));
+            myFeatures.put("extractEntities", new Boolean(false));
+            myFeatures.put("extractSyntax", new Boolean(true));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject myBody = new JSONObject();
+        try {
+            myBody.put("document", myDocument);
+            myBody.put("features", myFeatures);
+            myBody.put("encodingType", "UTF16");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=AIzaSyB4pa0J8WSkLwbGJE3xcXCmmY0NmxPYRlg";
+        JsonObjectRequest getSyntax = new JsonObjectRequest
+            (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    String tokens = "";
+                    try {
+                        JSONArray tokensObject = response.getJSONArray("tokens");
+                        tokens = tokensObject.toString();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+//                    System.out.println(tokens);
+                    //Pattern regex = Pattern.compile("/\\{\\\"content\\\":\\\"|(.*?)\\\",\\\"beginOffset\\\":|([0-9]+)\\},\\\"partOfSpeech\\\"\\:\\{\\\"tag\\\"\\:\\\"VERB\\\"\\}/g");
+                    //Matcher matcher = regex.matcher(response.toString());
+                }
+            }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
+
+        Volley.newRequestQueue(this).add(getSyntax);
     }
 
     @Override
