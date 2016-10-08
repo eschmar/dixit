@@ -121,3 +121,5 @@ gradle-app.setting
 
 ### Google
 /app/google-services.json
+
+.DS_Store

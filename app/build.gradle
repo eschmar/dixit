@@ -18,6 +18,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildTypes.each{
+        it.buildConfigField 'String', 'GOOGLE_NLP_API_KEY', GOOGLE_NLP_API_KEY
+        it.buildConfigField 'String', 'GOOGLE_TRANSLATE_API_KEY', GOOGLE_TRANSLATE_API_KEY
+    }
 }
 
 dependencies {
