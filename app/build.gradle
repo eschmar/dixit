@@ -10,12 +10,17 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    buildTypes.each{
+        it.buildConfigField 'String', 'GOOGLE_NLP_API_KEY', GOOGLE_NLP_API_KEY
+        it.buildConfigField 'String', 'GOOGLE_TRANSLATE_API_KEY', GOOGLE_TRANSLATE_API_KEY
     }
 }
 
@@ -35,7 +40,7 @@ dependencies {
     compile 'com.google.firebase:firebase-core:9.4.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.google.firebase:firebase-database:9.4.0'
-    compile project(':volley')
+    compile 'com.android.volley:volley:1.0.0'
     testCompile 'junit:junit:4.12'
 }
 

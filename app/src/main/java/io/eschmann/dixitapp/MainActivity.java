@@ -77,6 +77,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected TextView userName;
     protected TextView userEmail;
 
+    protected String GOOGLE_NLP_API_KEY = BuildConfig.GOOGLE_NLP_API_KEY;
+    protected String GOOGLE_TRANSLATE_API_KEY = BuildConfig.GOOGLE_TRANSLATE_API_KEY;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -240,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mainListAdapter.notifyDataSetChanged();
             tempp = result;
 
-            String translateUrl = "https://www.googleapis.com/language/translate/v2?key=AIzaSyDdhuqdk-d3KCIH-S09iK7LGGjQQpN1klY&q=" + result + "&source=sv&target=en";
+            String translateUrl = "https://www.googleapis.com/language/translate/v2?key=" + GOOGLE_TRANSLATE_API_KEY + "&q=" + result + "&source=sv&target=en";
             JsonObjectRequest translatePhrase = new JsonObjectRequest(
                     Request.Method.GET, translateUrl, null, new Response.Listener<JSONObject>() {
 
@@ -339,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             e.printStackTrace();
         }
 
-        String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=AIzaSyB4pa0J8WSkLwbGJE3xcXCmmY0NmxPYRlg";
+        String syntaxUrl = "https://language.googleapis.com/v1beta1/documents:annotateText?key=" + GOOGLE_NLP_API_KEY;
         JsonObjectRequest getSyntax = new JsonObjectRequest
             (Request.Method.POST, syntaxUrl, myBody, new Response.Listener<JSONObject>() {
                 @Override
