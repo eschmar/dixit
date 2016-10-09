@@ -1,6 +1,8 @@
 package io.eschmann.dixitapp;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -139,6 +142,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mainListView.setAdapter(mainListAdapter);
 
+        mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                taskSelected(i);
+            }
+        });
+
         mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
@@ -221,8 +231,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
             List<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            String result = results.get(0);
+            String result = results.get(0); // return the text converted phrase in result
 
+            /*
+            If the current user has already a node add the phrase to that, otherwise create a new node
+            and add the phrase.
+             */
             if (currentUserNode == null) {
                 Node temp = new Node();
                 temp.addPhrase(new Phrase(result));
@@ -233,6 +247,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
             }
 
+            // If the node exists clear the mainListAdapter and regenerate it including the new phrase
+            // otherwise add the new phrase to archive???
             if (currentUserNode != null) {
                 mainListAdapter.clear();
                 mainListAdapter.addAll(currentUserNode.getPhrases());
@@ -365,10 +381,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     Snackbar.make(findViewById(android.R.id.content), "Verbs found: " + tempVerbs.toString(), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
-
-//                    System.out.println(tokens);
-                    //Pattern regex = Pattern.compile("/\\{\\\"content\\\":\\\"|(.*?)\\\",\\\"beginOffset\\\":|([0-9]+)\\},\\\"partOfSpeech\\\"\\:\\{\\\"tag\\\"\\:\\\"VERB\\\"\\}/g");
-                    //Matcher matcher = regex.matcher(response.toString());
                 }
             }, new Response.ErrorListener() {
 
@@ -379,6 +391,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
 
         Volley.newRequestQueue(this).add(getSyntax);
+    }
+
+    /**
+     * Open a dialog window when an item in the list is clicked passing the item id.
+     * The windows contains the phrase, its translation and button to delete it.
+     * The delete button remove the phrase from the currentUserNode and update the mainListAdapter
+     * as well as the Firebase DB.
+     *
+     * @param position, the clicked item position id
+     */
+    private void taskSelected(final int position) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setTitle(currentUserNode.getPhrases().get(position).getText());
+
+        alertDialogBuilder
+                .setMessage(currentUserNode.getPhrases().get(position).getTranslation())
+                .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        currentUserNode.getPhrases().remove(position);
+                        mainListAdapter.clear();
+                        mainListAdapter.addAll(currentUserNode.getPhrases());
+                        mainListAdapter.notifyDataSetChanged();
+                        mDatabase.child("users").child(mUser.getUid()).setValue(currentUserNode);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     @Override
